@@ -1,212 +1,236 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>CPR AR Training Platform</title>
+<head>
+    <title>CPR AR Training - Pro Edition</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
     <style>
-      :root {
-        --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        --accent-color: #ff4081;
-      }
+        :root {
+            --primary-grad: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            --accent-grad: linear-gradient(135deg, #e91e63 0%, #ff5252 100%);
+            --dark-glass: rgba(0, 0, 0, 0.85);
+        }
 
-      body {
-        margin: 0;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background: #f4f7f6;
-        overflow-x: hidden;
-      }
+        body, html {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            background-color: #000;
+        }
 
-      /* Landing Page Styles */
-      #landing-page {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: var(--primary-gradient);
-        z-index: 2000;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        overflow-y: auto;
-        padding: 20px 0;
-      }
+        /* Welcome & Onboarding Screen */
+        #welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--primary-grad);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
 
-      .container {
-        width: 90%;
-        max-width: 600px;
-        text-align: center;
-      }
+        .content-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 40px;
+            border-radius: 25px;
+            width: 85%;
+            max-width: 500px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
 
-      h1 { font-size: 2.5rem; margin-bottom: 10px; }
-      p { line-height: 1.6; opacity: 0.9; }
+        h1 { margin-top: 0; font-size: 2em; letter-spacing: 1px; }
+        p { line-height: 1.6; color: #d1d1d1; font-size: 0.95em; }
 
-      .card {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
-        border-radius: 20px;
-        padding: 20px;
-        margin: 20px 0;
-        text-align: left;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
+        .manual-section {
+            text-align: left;
+            margin: 25px 0;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 15px;
+        }
 
-      .card h3 { margin-top: 0; color: #ffeb3b; }
+        .manual-section h3 { 
+            color: #ffeb3b; 
+            font-size: 1.1em; 
+            margin-top: 0;
+            text-transform: uppercase;
+        }
 
-      .start-btn {
-        padding: 18px 50px;
-        font-size: 1.2rem;
-        background: var(--accent-color);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        cursor: pointer;
-        font-weight: bold;
-        transition: transform 0.3s ease;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-      }
+        .manual-section ul { padding-left: 20px; margin-bottom: 0; }
+        .manual-section li { margin-bottom: 8px; font-size: 0.85em; }
 
-      .start-btn:hover { transform: scale(1.05); }
+        .start-btn {
+            background: var(--accent-grad);
+            border: none;
+            padding: 18px 45px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(233, 30, 99, 0.3);
+            text-transform: uppercase;
+        }
 
-      /* AR UI Styles */
-      .ui-container {
-        position: fixed;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 1000;
-        text-align: center;
-        width: 90%;
-        display: none; /* Hidden by default */
-      }
+        .start-btn:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(233, 30, 99, 0.5); }
 
-      .instruction-card {
-        background: rgba(0,0,0,0.8);
-        color: white;
-        padding: 15px;
-        border-radius: 15px;
-        margin-bottom: 10px;
-      }
+        /* AR UI Overlay */
+        .ui-container {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            text-align: center;
+            width: 90%;
+            display: none;
+        }
 
-      .btn-next {
-        padding: 15px 30px;
-        background: var(--accent-color);
-        color: white;
-        border: none;
-        border-radius: 50px;
-        font-weight: bold;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      }
+        .instruction-card {
+            background: var(--dark-glass);
+            color: white;
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
 
-      ul { padding-left: 20px; }
-      li { margin-bottom: 8px; }
+        .step-counter {
+            color: #ffeb3b;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-size: 0.8em;
+        }
+
+        #text-info { font-size: 1.1em; line-height: 1.4; }
+
+        .action-btn {
+            padding: 15px 35px;
+            font-size: 16px;
+            background: var(--accent-grad);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
     </style>
-  </head>
+</head>
 
-  <body>
+<body>
 
-    <div id="landing-page">
-      <div class="container">
-        <h1>CPR AR Coach</h1>
-        <p>Your Interactive Guide to Saving Lives using Augmented Reality</p>
+    <div id="welcome-screen">
+        <div class="content-card">
+            <h1>CPR AR TRAINER</h1>
+            <p>Interactive Augmented Reality experience for Life-Saving skills.</p>
+            
+            <div class="manual-section">
+                <h3>User Manual:</h3>
+                <ul>
+                    <li>Point your camera at the "Hiro" marker.</li>
+                    <li>Follow the 3D visual guides in the scene.</li>
+                    <li>Use the action button to progress through steps.</li>
+                </ul>
+            </div>
 
-        <div class="card">
-          <h3>📖 How to use the App:</h3>
-          <ul>
-            <li>Place the <b>Hiro Marker</b> on a flat surface next to the mannequin.</li>
-            <li>Grant camera permission when prompted.</li>
-            <li>Keep the marker within the camera view at all times.</li>
-            <li>Follow the 3D arrows and rings appearing on the body.</li>
-          </ul>
+            <div class="manual-section">
+                <h3>Guidelines:</h3>
+                <ul>
+                    <li>Check scene safety before approaching.</li>
+                    <li>Call emergency services immediately.</li>
+                    <li>Educational purposes only.</li>
+                </ul>
+            </div>
+
+            <button class="start-btn" onclick="startApp()">Start Training</button>
         </div>
-
-        <div class="card">
-          <h3>🚑 CPR Quick Steps:</h3>
-          <p>1. Check Safety | 2. Check Response | 3. Open Airway | 4. Check Breathing | 5. 30 Compressions | 6. 2 Breaths</p>
-        </div>
-
-        <button class="start-btn" onclick="startExperience()">START TRAINING NOW</button>
-        <p style="font-size: 0.8rem; margin-top: 20px;">Powered by WebXR Technology</p>
-      </div>
     </div>
 
-    <div class="ui-container" id="ar-ui">
-      <div class="instruction-card">
-        <span id="step-label" style="color: #ffeb3b; font-weight: bold; display: block; margin-bottom: 5px;">STEP 1</span>
-        <div id="text-info">Make sure the area is safe for you and the victim</div>
-      </div>
-      <button class="btn-next" onclick="nextStep()">Next Step →</button>
+    <div id="ar-ui" class="ui-container">
+        <div class="instruction-card">
+            <span id="step-label" class="step-counter">STEP 1</span>
+            <div id="text-info">Ensure the area is safe for you and the victim.</div>
+        </div>
+        <button class="action-btn" onclick="nextStep()">Next Step →</button>
     </div>
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
-      <a-marker preset="hiro">
-        
-        <a-entity id="group1">
-            <a-cone color="#4CAF50" radius-bottom="0.1" height="0.3" position="0 0.5 0" rotation="180 0 0"></a-cone>
-            <a-text value="Safety First" align="center" position="0 0.8 0" scale="0.6 0.6 0.6"></a-text>
-        </a-entity>
+        <a-marker preset="hiro">
+            
+            <a-entity id="group1">
+                <a-cone color="#4CAF50" radius-bottom="0.1" height="0.3" position="0 0.5 0" rotation="180 0 0"></a-cone>
+                <a-text value="Safety First" align="center" position="0 0.8 0" scale="0.6 0.6 0.6"></a-text>
+            </a-entity>
 
-        <a-entity id="group2" visible="false">
-            <a-cone color="yellow" radius-bottom="0.05" height="0.2" position="-0.3 0.3 -0.5"></a-cone>
-            <a-text value="Are you okay?" align="center" position="-0.3 0.6 -0.5" scale="0.5 0.5 0.5"></a-text>
-            <a-ring color="white" radius-inner="0.1" radius-outer="0.12" position="0.3 0.1 -0.3" rotation="-90 0 0"></a-ring>
-            <a-text value="Tap shoulder" align="center" position="0.3 0.4 -0.3" scale="0.5 0.5 0.5"></a-text>
-        </a-entity>
+            <a-entity id="group2" visible="false">
+                <a-sphere color="yellow" radius="0.1" position="-0.3 0.3 0"></a-sphere>
+                <a-text value="Check Response" align="center" position="0 0.6 0" scale="0.5 0.5 0.5"></a-text>
+            </a-entity>
 
-        <a-entity id="group3" visible="false">
-            <a-sphere color="blue" radius="0.1" position="0 0.2 -1"></a-sphere>
-            <a-text value="Forehead & Chin" align="center" position="0 0.5 -1" scale="0.5 0.5 0.5"></a-text>
-        </a-entity>
+            <a-entity id="group3" visible="false">
+                <a-torus color="blue" arc="180" radius="0.2" radius-tubular="0.01" position="0 0.2 0" rotation="90 0 0"></a-torus>
+                <a-text value="Open Airway" align="center" position="0 0.5 0" scale="0.5 0.5 0.5"></a-text>
+            </a-entity>
 
-        <a-entity id="group4" visible="false">
-            <a-box color="orange" width="0.2" height="0.05" depth="0.2" position="0 0.1 -0.7"></a-box>
-            <a-text value="Check Breathing" align="center" position="0 0.4 -0.7" scale="0.5 0.5 0.5"></a-text>
-        </a-entity>
+            <a-entity id="group4" visible="false">
+                <a-box color="orange" width="0.2" height="0.1" depth="0.2" position="0 0.1 0"></a-box>
+                <a-text value="Check Breathing" align="center" position="0 0.4 0" scale="0.5 0.5 0.5"></a-text>
+            </a-entity>
 
-        <a-entity id="group5" visible="false">
-            <a-ring color="red" radius-inner="0.15" radius-outer="0.2" position="0 0.1 -0.5" rotation="-90 0 0"></a-ring>
-            <a-text value="30 Compressions" align="center" position="0 0.5 -0.5" scale="0.6 0.6 0.6"></a-text>
-        </a-entity>
+            <a-entity id="group5" visible="false">
+                <a-ring color="red" radius-inner="0.15" radius-outer="0.2" position="0 0.1 0" rotation="-90 0 0"></a-ring>
+                <a-text value="30 Compressions" align="center" position="0 0.5 0" scale="0.6 0.6 0.6"></a-text>
+            </a-entity>
 
-        <a-entity id="group6" visible="false">
-            <a-cone color="cyan" radius-bottom="0.1" height="0.3" position="0 0.4 -1" rotation="180 0 0"></a-cone>
-            <a-text value="Give 2 Breaths" align="center" position="0 0.8 -1" scale="0.6 0.6 0.6"></a-text>
-        </a-entity>
+            <a-entity id="group6" visible="false">
+                <a-cylinder color="cyan" radius="0.05" height="0.3" position="0 0.3 0"></a-cylinder>
+                <a-text value="2 Rescue Breaths" align="center" position="0 0.7 0" scale="0.6 0.6 0.6"></a-text>
+            </a-entity>
 
-      </a-marker>
-      <a-entity camera></a-entity>
+        </a-marker>
+        <a-entity camera></a-entity>
     </a-scene>
 
     <script>
-      let currentStep = 1;
-      const stepsText = [
-        "Make sure the area is safe for you and the victim",
-        "Call out loudly: Are you okay? & Tap the shoulder gently",
-        "Place hand on forehead & Lift the chin gently",
-        "Look for chest movement & Listen for breathing (10 sec)",
-        "Place heel of hand, other hand on top. Push 30 times (5cm deep)",
-        "Tilt head back, close nose, and give 2 breaths"
-      ];
+        let currentStep = 1;
+        const stepsText = [
+            "Ensure the area is safe for you and the victim.",
+            "Tap shoulders and shout: Are you okay?",
+            "Open the airway: Tilt head back and lift chin.",
+            "Look, listen, and feel for breathing (10 sec).",
+            "Perform 30 chest compressions (5-6cm depth).",
+            "Give 2 rescue breaths after pinching the nose."
+        ];
 
-      function startExperience() {
-        // Hide Landing Page and Show AR UI
-        document.getElementById('landing-page').style.display = 'none';
-        document.getElementById('ar-ui').style.display = 'block';
-      }
+        function startApp() {
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.getElementById('ar-ui').style.display = 'block';
+        }
 
-      function nextStep() {
-        document.getElementById('group' + currentStep).setAttribute('visible', 'false');
-        currentStep = (currentStep % 6) + 1;
-        document.getElementById('group' + currentStep).setAttribute('visible', 'true');
-        document.getElementById('step-label').innerText = "STEP " + currentStep;
-        document.getElementById('text-info').innerText = stepsText[currentStep - 1];
-      }
+        function nextStep() {
+            document.getElementById('group' + currentStep).setAttribute('visible', 'false');
+            currentStep = (currentStep % 6) + 1;
+            document.getElementById('group' + currentStep).setAttribute('visible', 'true');
+            document.getElementById('step-label').innerText = "STEP " + currentStep;
+            document.getElementById('text-info').innerText = stepsText[currentStep - 1];
+        }
     </script>
-  </body>
+</body>
 </html>
